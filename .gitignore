@@ -1,0 +1,25 @@
+# Build results
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Allure
+allure-results/
+allure-report/
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Packages
+*.nupkg
+

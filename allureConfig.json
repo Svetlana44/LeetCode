@@ -1,0 +1,10 @@
+{
+  "allure": {
+    "directory": "../../../allure-results",
+    "links": [
+      "https://jira.example.com/browse/{issue}",
+      "https://tms.example.com/testcase/{tms}",
+      "{link}"
+    ]
+  }
+}
