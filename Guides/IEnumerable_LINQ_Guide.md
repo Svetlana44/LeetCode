@@ -269,30 +269,218 @@ int maxAge = users.Max(u => u.Age);
 var oldest = users.MaxBy(u => u.Age);  // C# 10+
 ```
 
-### GroupBy
+### GroupBy — группировка (GROUP BY из SQL)
+
+**Что делает:** Группирует элементы по ключу. Возвращает `IEnumerable<IGrouping<TKey, TElement>>`.
+
 ```csharp
+// ===== ИСХОДНЫЕ ДАННЫЕ =====
+
+var users = new[]
+{
+    new { Id = 1, Name = "Alice",   Role = "Admin" },
+    new { Id = 2, Name = "Bob",     Role = "User" },
+    new { Id = 3, Name = "Charlie", Role = "Admin" },
+    new { Id = 4, Name = "Diana",   Role = "User" },
+    new { Id = 5, Name = "Eve",     Role = "User" }
+};
+
+// ===== GROUPBY =====
+
 var byRole = users.GroupBy(u => u.Role);
 
-foreach (var group in byRole)
-{
-    Console.WriteLine($"Role: {group.Key}");
-    foreach (var user in group)
-        Console.WriteLine($"  {user.Name}");
-}
-
-// В Dictionary
-var dict = users.GroupBy(u => u.Role)
-                .ToDictionary(g => g.Key, g => g.ToList());
+// ===== ЧТО ПОЛУЧИЛОСЬ =====
+// byRole — это IEnumerable<IGrouping<string, User>>
+//
+// Группа 1: Key = "Admin"
+//   ├── { Id = 1, Name = "Alice",   Role = "Admin" }
+//   └── { Id = 3, Name = "Charlie", Role = "Admin" }
+//
+// Группа 2: Key = "User"
+//   ├── { Id = 2, Name = "Bob",   Role = "User" }
+//   ├── { Id = 4, Name = "Diana", Role = "User" }
+//   └── { Id = 5, Name = "Eve",   Role = "User" }
 ```
 
-### Join — соединение
+**Что такое IGrouping<TKey, TElement>?**
 ```csharp
+public interface IGrouping<TKey, TElement> : IEnumerable<TElement>
+{
+    TKey Key { get; }  // Ключ группы ("Admin", "User")
+}
+// IGrouping — это коллекция элементов + свойство Key
+```
+
+**Итерация по группам:**
+```csharp
+foreach (var group in byRole)
+{
+    Console.WriteLine($"=== {group.Key} ===");  // Key = "Admin" или "User"
+    
+    foreach (var user in group)  // group — это IEnumerable<User>
+    {
+        Console.WriteLine($"  {user.Name}");
+    }
+}
+
+// Вывод:
+// === Admin ===
+//   Alice
+//   Charlie
+// === User ===
+//   Bob
+//   Diana
+//   Eve
+```
+
+**Преобразование в Dictionary:**
+```csharp
+// Ключ → Список объектов
+var dict = users.GroupBy(u => u.Role)
+                .ToDictionary(g => g.Key, g => g.ToList());
+// { "Admin": [Alice, Charlie], "User": [Bob, Diana, Eve] }
+
+// Ключ → Только имена
+var dict = users.GroupBy(u => u.Role)
+                .ToDictionary(g => g.Key, g => g.Select(u => u.Name).ToList());
+// { "Admin": ["Alice", "Charlie"], "User": ["Bob", "Diana", "Eve"] }
+
+// Ключ → Количество
+var dict = users.GroupBy(u => u.Role)
+                .ToDictionary(g => g.Key, g => g.Count());
+// { "Admin": 2, "User": 3 }
+```
+
+**Агрегация по группам:**
+```csharp
+var stats = users.GroupBy(u => u.Role)
+                 .Select(g => new
+                 {
+                     Role = g.Key,
+                     Count = g.Count(),
+                     Names = string.Join(", ", g.Select(u => u.Name))
+                 });
+
+// { Role = "Admin", Count = 2, Names = "Alice, Charlie" }
+// { Role = "User",  Count = 3, Names = "Bob, Diana, Eve" }
+```
+
+**Аналог в SQL:**
+```sql
+SELECT Role, COUNT(*) as Count
+FROM Users
+GROUP BY Role
+```
+
+**Java эквивалент:**
+```java
+Map<String, List<User>> byRole = users.stream()
+    .collect(Collectors.groupingBy(User::getRole));
+```
+
+**⚠️ Частая ошибка — забыть что group это коллекция:**
+```csharp
+// ПЛОХО — пытаемся обратиться к user напрямую
+var result = users.GroupBy(u => u.Role)
+                  .Select(g => g.Name);  // ❌ Ошибка! g — это группа, не user
+
+// ХОРОШО — итерируем по группе
+var result = users.GroupBy(u => u.Role)
+                  .Select(g => g.First().Name);  // ✅ Берём первого из группы
+```
+
+### Join — соединение (INNER JOIN из SQL)
+
+**Что делает:** Соединяет две коллекции по общему ключу (как INNER JOIN в SQL).
+
+```csharp
+// ===== ИСХОДНЫЕ ДАННЫЕ =====
+
+// Таблица пользователей
+var users = new[]
+{
+    new { Id = 1, Name = "Alice" },
+    new { Id = 2, Name = "Bob" },
+    new { Id = 3, Name = "Charlie" }  // У Charlie нет заказов!
+};
+
+// Таблица заказов
+var orders = new[]
+{
+    new { OrderId = 101, UserId = 1, Total = 250 },   // Заказ Alice
+    new { OrderId = 102, UserId = 1, Total = 150 },   // Ещё заказ Alice
+    new { OrderId = 103, UserId = 2, Total = 350 },   // Заказ Bob
+    new { OrderId = 104, UserId = 99, Total = 50 }    // Несуществующий юзер!
+};
+
+// ===== JOIN =====
+
 var result = users.Join(
+    orders,                              // 1. Вторая коллекция
+    user => user.Id,                     // 2. Ключ из первой (users)
+    order => order.UserId,               // 3. Ключ из второй (orders)
+    (user, order) => new                 // 4. Что создать из пары
+    { 
+        user.Name, 
+        order.Total 
+    }
+);
+
+// ===== РЕЗУЛЬТАТ =====
+// { Name = "Alice", Total = 250 }
+// { Name = "Alice", Total = 150 }
+// { Name = "Bob",   Total = 350 }
+//
+// ❌ Charlie НЕТ — у него нет заказов (INNER JOIN)
+// ❌ Заказ 104 НЕТ — UserId = 99 не существует
+```
+
+**Сигнатура метода:**
+```csharp
+outerCollection.Join(
+    innerCollection,           // С чем соединяем
+    outer => outer.Key,        // Ключ из внешней коллекции
+    inner => inner.Key,        // Ключ из внутренней коллекции
+    (outer, inner) => result   // Что вернуть для каждой пары
+);
+```
+
+**Аналог в SQL:**
+```sql
+SELECT u.Name, o.Total
+FROM Users u
+INNER JOIN Orders o ON u.Id = o.UserId
+```
+
+**Java эквивалент (нет прямого, нужен flatMap):**
+```java
+users.stream()
+    .flatMap(user -> orders.stream()
+        .filter(order -> order.getUserId() == user.getId())
+        .map(order -> new Result(user.getName(), order.getTotal())))
+    .collect(toList());
+```
+
+### GroupJoin — LEFT JOIN с группировкой
+
+```csharp
+// Если нужен LEFT JOIN (все users, даже без заказов):
+var result = users.GroupJoin(
     orders,
     user => user.Id,
     order => order.UserId,
-    (user, order) => new { user.Name, order.Total }
+    (user, userOrders) => new 
+    { 
+        user.Name, 
+        OrderCount = userOrders.Count(),
+        TotalSpent = userOrders.Sum(o => o.Total)
+    }
 );
+
+// Результат:
+// { Name = "Alice",   OrderCount = 2, TotalSpent = 400 }
+// { Name = "Bob",     OrderCount = 1, TotalSpent = 350 }
+// { Name = "Charlie", OrderCount = 0, TotalSpent = 0 }  // ✅ Charlie есть!
 ```
 
 ### Distinct / DistinctBy
@@ -412,10 +600,63 @@ actions.ForEach(a => a());  // 3, 3, 3 — а не 0, 1, 2!
 var numbers = new List<int>();
 int first = numbers.FirstOrDefault();  // 0, а не null!
 
-// Проверка
+// Как понять что элемента не было?
+// Вариант 1: проверить заранее
 if (!numbers.Any()) { /* пусто */ }
-// или
-int? first = numbers.Cast<int?>().FirstOrDefault();
+
+// Вариант 2: сделать nullable
+int? first = numbers.Cast<int?>().FirstOrDefault();  // null если пусто
+```
+
+**Что такое `int?` (знак вопроса)?**
+
+`int?` — это **Nullable<int>**, позволяет хранить `null` в value type.
+
+```csharp
+// Обычный int — НЕ может быть null
+int a = 5;
+int b = null;  // ❌ Ошибка компиляции!
+
+// Nullable int — МОЖЕТ быть null
+int? c = 5;
+int? d = null;  // ✅ OK
+
+// Проверка
+if (d.HasValue)
+    Console.WriteLine(d.Value);  // Получить значение
+else
+    Console.WriteLine("null");
+
+// Или короче (null-coalescing)
+int result = d ?? 0;  // Если d == null, то 0
+```
+
+**Зачем Cast<int?>() перед FirstOrDefault?**
+
+```csharp
+var numbers = new List<int>();  // Пустой список
+
+// Проблема: FirstOrDefault для int возвращает 0
+int first = numbers.FirstOrDefault();
+// first = 0 — но это default(int), НЕ означает что элемент найден!
+// Невозможно отличить "нашли 0" от "список пуст"
+
+// Решение: преобразуем int → int?
+int? firstNullable = numbers.Cast<int?>().FirstOrDefault();
+// firstNullable = null — теперь ясно что список пуст!
+
+if (firstNullable == null)
+    Console.WriteLine("Список пуст");
+else
+    Console.WriteLine($"Первый элемент: {firstNullable.Value}");
+```
+
+**Java эквивалент:**
+```java
+// В Java примитивы тоже не могут быть null
+// Используют Optional или boxed Integer
+Optional<Integer> first = numbers.stream().findFirst();
+Integer first = numbers.isEmpty() ? null : numbers.get(0);
 ```
 
 ---
@@ -477,15 +718,121 @@ Assert.That(list, Has.Exactly(3).Items.Matches<User>(u => u.IsActive));
 ```
 
 ### Генерация тестовых данных
+
+#### Enumerable.Range — генератор последовательности чисел
+
 ```csharp
+// Enumerable.Range(start, count) — генерирует count чисел начиная со start
+Enumerable.Range(1, 5)   // → [1, 2, 3, 4, 5]
+Enumerable.Range(0, 3)   // → [0, 1, 2]
+Enumerable.Range(10, 4)  // → [10, 11, 12, 13]
+
+// ⚠️ Это НЕ диапазон от 1 до 100, а 100 чисел начиная с 1!
+Enumerable.Range(1, 100)  // → [1, 2, 3, ..., 100]
+```
+
+**Java эквивалент:**
+```java
+IntStream.range(1, 6)      // → [1, 2, 3, 4, 5] (exclusive end)
+IntStream.rangeClosed(1, 5) // → [1, 2, 3, 4, 5] (inclusive end)
+```
+
+#### Создание тестовых объектов
+
+```csharp
+// Генерируем 100 пользователей
 var testUsers = Enumerable.Range(1, 100)
     .Select(i => new User { Id = i, Name = $"User{i}" })
     .ToList();
 
+// Что получилось:
+// [
+//   { Id = 1,   Name = "User1" },
+//   { Id = 2,   Name = "User2" },
+//   { Id = 3,   Name = "User3" },
+//   ...
+//   { Id = 100, Name = "User100" }
+// ]
+```
+
+**Разбор по шагам:**
+```csharp
+Enumerable.Range(1, 100)  // 1. Генерируем числа [1, 2, 3, ..., 100]
+    .Select(i => ...)     // 2. Каждое число i преобразуем в объект
+    .ToList();            // 3. Материализуем в List<User>
+```
+
+**$"User{i}" — интерполяция строк:**
+```csharp
+int i = 42;
+string s = $"User{i}";  // → "User42"
+
+// Java эквивалент:
+String s = "User" + i;          // конкатенация
+String s = String.format("User%d", i);  // форматирование
+```
+
+#### Случайная выборка (shuffle + take)
+
+```csharp
 var randomSubset = testUsers
-    .OrderBy(_ => Guid.NewGuid())
-    .Take(10)
+    .OrderBy(_ => Guid.NewGuid())  // Перемешиваем случайно
+    .Take(10)                       // Берём первые 10
     .ToList();
+```
+
+**Разбор:**
+```csharp
+.OrderBy(_ => Guid.NewGuid())
+//       ↑
+//       _ — "отбрасываем" параметр, он нам не нужен
+//           (user не используется, нужен только случайный ключ)
+//
+// Guid.NewGuid() — генерирует уникальный случайный идентификатор
+// Каждый вызов = новый GUID = случайная сортировка
+
+.Take(10)  // Берём 10 элементов из перемешанного списка
+```
+
+**Почему `_` (underscore)?**
+```csharp
+// Когда параметр не используется, принято называть его _
+.OrderBy(_ => Guid.NewGuid())      // ✅ Ясно что user не нужен
+.OrderBy(user => Guid.NewGuid())   // ⚠️ Зачем user если не используем?
+
+// Другие примеры:
+list.Select((_, index) => index)   // Нужен только индекс
+```
+
+#### Ещё примеры генерации тестовых данных
+
+```csharp
+// Список случайных чисел
+var randomNumbers = Enumerable.Range(0, 50)
+    .Select(_ => Random.Shared.Next(1, 100))
+    .ToList();
+
+// Список дат (последние 30 дней)
+var dates = Enumerable.Range(0, 30)
+    .Select(i => DateTime.Today.AddDays(-i))
+    .ToList();
+
+// Список с разными статусами
+var statuses = new[] { "Active", "Pending", "Closed" };
+var items = Enumerable.Range(1, 20)
+    .Select(i => new 
+    { 
+        Id = i, 
+        Status = statuses[i % statuses.Length]  // Циклически
+    })
+    .ToList();
+
+// Enumerable.Repeat — повторить элемент N раз
+var fiveZeros = Enumerable.Repeat(0, 5).ToList();  // [0, 0, 0, 0, 0]
+var fiveHellos = Enumerable.Repeat("Hello", 5).ToList();
+
+// Enumerable.Empty — пустая коллекция нужного типа
+IEnumerable<User> empty = Enumerable.Empty<User>();
 ```
 
 ### Ожидание условия (для UI/API тестов)

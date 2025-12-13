@@ -34,10 +34,12 @@ namespace LeetCode.Tasks.LINQ
         ║   • -10^6 <= nums[i] <= 10^6                                     ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public int[] FilterEvenNumbers(int[] nums)
         {
             // Твоё решение здесь
+            return nums.Where(n => (n % 2) == 0).ToArray();
+
             throw new NotImplementedException();
         }
 
@@ -80,10 +82,12 @@ namespace LeetCode.Tasks.LINQ
         ║   • 1 <= minLength <= 100                                        ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public string[] FilterStringsByLength(string[] words, int minLength)
         {
             // Твоё решение здесь
+            return words.Where(w => w.Length >= minLength).ToArray();
+
             throw new NotImplementedException();
         }
 
@@ -126,10 +130,12 @@ namespace LeetCode.Tasks.LINQ
         ║   • min <= max                                                   ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public int[] FilterNumbersInRange(int[] nums, int min, int max)
         {
             // Твоё решение здесь
+            return nums.Where(n => (n > min && n <= max && n % 3 == 0)).ToArray();
+
             throw new NotImplementedException();
         }
 
