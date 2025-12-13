@@ -56,6 +56,110 @@ List<T>             — конкретная реализация
 
 ---
 
+## IEnumerator — что это и зачем
+
+### Интерфейс IEnumerator<T>
+```csharp
+public interface IEnumerator<T> : IDisposable
+{
+    T Current { get; }           // Текущий элемент
+    bool MoveNext();             // Перейти к следующему (true если есть)
+    void Reset();                // Сбросить на начало (редко используется)
+}
+```
+
+### Связь IEnumerable и IEnumerator
+```csharp
+public interface IEnumerable<T>
+{
+    IEnumerator<T> GetEnumerator();  // Возвращает "курсор" для перебора
+}
+```
+
+**Аналогия:** 
+- `IEnumerable` — это **книга** (коллекция страниц)
+- `IEnumerator` — это **закладка** (указатель на текущую страницу)
+
+### Как foreach работает под капотом
+```csharp
+// Это:
+foreach (var item in collection)
+{
+    Console.WriteLine(item);
+}
+
+// Компилятор превращает в это:
+IEnumerator<T> enumerator = collection.GetEnumerator();
+try
+{
+    while (enumerator.MoveNext())
+    {
+        var item = enumerator.Current;
+        Console.WriteLine(item);
+    }
+}
+finally
+{
+    enumerator.Dispose();  // IEnumerator<T> наследует IDisposable
+}
+```
+
+### Зачем нужен IEnumerator напрямую?
+
+**1. Ручной контроль итерации:**
+```csharp
+var enumerator = list.GetEnumerator();
+
+enumerator.MoveNext();
+var first = enumerator.Current;  // Первый элемент
+
+enumerator.MoveNext();
+var second = enumerator.Current;  // Второй элемент
+// Можно остановиться в любой момент
+```
+
+**2. Параллельный перебор нескольких коллекций:**
+```csharp
+var enum1 = list1.GetEnumerator();
+var enum2 = list2.GetEnumerator();
+
+while (enum1.MoveNext() && enum2.MoveNext())
+{
+    Console.WriteLine($"{enum1.Current} - {enum2.Current}");
+}
+```
+
+**3. Создание своего итератора (без yield):**
+```csharp
+public class CountdownEnumerator : IEnumerator<int>
+{
+    private int _current;
+    private readonly int _start;
+    
+    public CountdownEnumerator(int start) => _start = _current = start + 1;
+    
+    public int Current => _current;
+    object IEnumerator.Current => Current;
+    
+    public bool MoveNext() => --_current >= 0;
+    public void Reset() => _current = _start + 1;
+    public void Dispose() { }
+}
+```
+
+### Вопросы на собесе:
+
+**Q: Зачем GetEnumerator() возвращает новый объект каждый раз?**
+> Чтобы можно было иметь несколько независимых "курсоров" на одну коллекцию. Каждый foreach создаёт свой enumerator.
+
+**Q: Почему IEnumerator<T> наследует IDisposable?**
+> Для освобождения ресурсов после итерации. Например, при чтении из файла или БД нужно закрыть соединение.
+
+**Q: Что будет если изменить коллекцию во время итерации?**
+> `InvalidOperationException: Collection was modified`. Enumerator отслеживает версию коллекции.
+
+---
+
 ## Deferred vs Immediate Execution (КРИТИЧНО!)
 
 ### Отложенное выполнение (Deferred)

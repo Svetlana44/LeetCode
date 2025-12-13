@@ -24,8 +24,9 @@ namespace LeetCode.Tests
             //var sorted = nums1.OrderByDescending(n => n).ToArray(); обратная сортировка
             int[] sortedNums = nums.OrderBy<int, int>(x => x).ToArray<int>();
 
-            foreach (var item in sortedNums)
-                Assert.Pass();
+            // Проверяем что результат отсортирован правильно
+            int[] expected = { 0, 1, 3 };
+            Assert.That(sortedNums, Is.EqualTo(expected));
         }
 
         // ========== ВАРИАНТ 1: СОЗДАЁТСЯ НОВЫЙ МАССИВ ==========
