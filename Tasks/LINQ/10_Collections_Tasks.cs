@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Allure.NUnit;
 using NUnit.Framework;
 
 namespace LeetCode.Tasks.LINQ
@@ -9,6 +10,7 @@ namespace LeetCode.Tasks.LINQ
     /// ЗАДАЧИ НА РАЗНЫЕ КОЛЛЕКЦИИ — List, HashSet, конвертация
     /// Важно для собеса: знать разницу и когда что использовать
     /// </summary>
+    [AllureNUnit]
     public class Collections_Tasks
     {
         #region Задача 1: Remove Duplicates (HashSet)

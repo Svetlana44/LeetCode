@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Allure.NUnit;
 using NUnit.Framework;
 
 namespace LeetCode.Tasks.Dictionary
@@ -8,6 +9,7 @@ namespace LeetCode.Tasks.Dictionary
     /// <summary>
     /// ЗАДАЧИ НА DICTIONARY — средний уровень
     /// </summary>
+    [AllureNUnit]
     public class Dictionary_Medium_Tasks
     {
         #region Задача 1: Group Anagrams

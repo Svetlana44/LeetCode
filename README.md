@@ -243,6 +243,62 @@ dotnet test --filter "TestCategory=Crypto"
 
 ## 📊 Allure Reports — Формирование отчётов
 
+### ⚠️ Обязательные атрибуты для Allure
+
+Чтобы тесты попадали в Allure отчёт, класс должен иметь атрибут `[AllureNUnit]`:
+
+```csharp
+using Allure.NUnit;        // ← Добавить using
+using NUnit.Framework;
+
+[AllureNUnit]              // ← Обязательный атрибут!
+public class MyTests
+{
+    [Test]
+    public void MyTest() { }
+}
+```
+
+**Без `[AllureNUnit]`** тесты выполнятся, но **не попадут в отчёт**!
+
+### Дополнительные атрибуты Allure
+
+```csharp
+[Test]
+[AllureDescription("Подробное описание теста")]
+[AllureSeverity(SeverityLevel.critical)]     // blocker/critical/normal/minor/trivial
+[AllureTag("LINQ", "Regression")]
+[AllureOwner("Иван Иванов")]
+[AllureIssue("JIRA-123")]                    // Ссылка на баг
+[AllureTms("TMS-456")]                       // Ссылка на тест-кейс
+public void MyTest() { }
+```
+
+### Шаги в тестах (Steps)
+
+```csharp
+[Test]
+public void TestWithSteps()
+{
+    AllureApi.Step("Шаг 1: Подготовка данных", () =>
+    {
+        // код
+    });
+    
+    AllureApi.Step("Шаг 2: Выполнение", () =>
+    {
+        // код
+    });
+    
+    AllureApi.Step("Шаг 3: Проверка", () =>
+    {
+        Assert.That(result, Is.EqualTo(expected));
+    });
+}
+```
+
+---
+
 ### Шаг 1: Установка Allure CLI
 
 **Windows (Scoop) — рекомендуется:**
@@ -486,6 +542,9 @@ dotnet test --filter "TestMin"
 
 # Запуск тестов по категории
 dotnet test --filter "TestCategory=Smoke"
+
+# ⚡ Полный цикл Allure (очистка → тесты → отчёт)
+Remove-Item allure-results -Recurse -Force -ErrorAction SilentlyContinue; dotnet test; allure serve allure-results
 
 # Генерация отчёта Allure
 allure serve allure-results

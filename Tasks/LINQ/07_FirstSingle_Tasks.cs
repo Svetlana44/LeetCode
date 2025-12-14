@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Allure.NUnit;
 using NUnit.Framework;
 
 namespace LeetCode.Tasks.LINQ
@@ -9,6 +10,7 @@ namespace LeetCode.Tasks.LINQ
     /// ЗАДАЧИ НА FIRST / SINGLE / FIRSTORDEFAULT / SINGLEORDEFAULT
     /// Критично знать разницу для собеседования!
     /// </summary>
+    [AllureNUnit]
     public class FirstSingle_Tasks
     {
         #region Задача 1: Find First Matching

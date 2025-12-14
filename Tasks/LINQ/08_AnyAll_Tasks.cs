@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Allure.NUnit;
 using NUnit.Framework;
 
 namespace LeetCode.Tasks.LINQ
@@ -8,6 +9,7 @@ namespace LeetCode.Tasks.LINQ
     /// <summary>
     /// ЗАДАЧИ НА ANY / ALL — проверка условий
     /// </summary>
+    [AllureNUnit]
     public class AnyAll_Tasks
     {
         #region Задача 1: Contains Negative
