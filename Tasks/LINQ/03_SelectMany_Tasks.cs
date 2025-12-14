@@ -34,10 +34,12 @@ namespace LeetCode.Tasks.LINQ
         ║   • 1 <= matrix[i].length <= 100                                 ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public int[] Flatten2DArray(int[][] matrix)
         {
             // Твоё решение здесь
+            return matrix.SelectMany(x => x.Select(y => y)).ToArray();
+
             throw new NotImplementedException();
         }
 
@@ -93,10 +95,13 @@ namespace LeetCode.Tasks.LINQ
         ║   • Words are separated by single space                          ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public string[] SplitAndFlatten(string[] sentences)
         {
             // Твоё решение здесь
+            return sentences.SelectMany(str => str.Split(" ")).ToArray();
+
+
             throw new NotImplementedException();
         }
 
@@ -138,10 +143,16 @@ namespace LeetCode.Tasks.LINQ
         ║   • Only letters a-z, A-Z                                        ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public char[] GetAllCharacters(string[] words)
         {
             // Твоё решение здесь
+            return words.SelectMany(word => word.ToLower()
+            .ToCharArray()) //конец SelectMany
+            .OrderBy(c => c)
+            .Distinct()
+                .ToArray<char>();
+
             throw new NotImplementedException();
         }
 

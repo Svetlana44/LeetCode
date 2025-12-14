@@ -218,12 +218,84 @@ var active = users.Where(u => u.IsActive && u.Role == "Admin");
 ```
 
 ### Select — преобразование (map)
+
+**Базовое использование:**
 ```csharp
 var names = users.Select(u => u.Name);
 var dtos = users.Select(u => new UserDto { Id = u.Id, Name = u.Name });
+```
 
-// С индексом
-var indexed = list.Select((item, index) => $"{index}: {item}");
+#### Перегрузка Select с индексом
+
+```csharp
+// Сигнатура: Select<T, TResult>(Func<T, int, TResult> selector)
+//                                    ↑    ↑
+//                                 element index
+
+var fruits = new[] { "apple", "banana", "cherry" };
+
+// Получаем и элемент, и его индекс
+var indexed = fruits.Select((item, index) => $"{index}: {item}");
+// ["0: apple", "1: banana", "2: cherry"]
+
+// Использовать индекс в вычислениях
+var multiplied = numbers.Select((n, i) => n * i);
+// numbers = [10, 20, 30]
+// result  = [10*0, 20*1, 30*2] = [0, 20, 60]
+
+// Фильтрация по индексу (каждый второй)
+var everySecond = items.Select((item, i) => (item, i))
+                       .Where(x => x.i % 2 == 0)
+                       .Select(x => x.item);
+```
+
+**Когда нужен индекс:**
+```csharp
+// 1. Нумерация элементов
+var numbered = items.Select((item, i) => $"{i + 1}. {item}");
+
+// 2. Сравнение с предыдущим/следующим
+var diffs = numbers.Select((n, i) => i == 0 ? 0 : n - numbers[i - 1]);
+
+// 3. Позиционная логика
+var positioned = items.Select((item, i) => new 
+{
+    Item = item,
+    IsFirst = i == 0,
+    IsLast = i == items.Length - 1,
+    Position = i + 1
+});
+```
+
+#### Другие методы LINQ с перегрузкой индекса
+
+```csharp
+// Where с индексом
+var evenPositions = items.Where((item, index) => index % 2 == 0);
+// Элементы на чётных позициях: [0], [2], [4]...
+
+// SkipWhile / TakeWhile с индексом
+var afterThird = items.SkipWhile((item, index) => index < 3);
+// Пропустить первые 3, взять остальные
+
+// Aggregate с индексом — НЕТ перегрузки!
+// Но можно через Select:
+var result = items.Select((item, i) => (item, i))
+                  .Aggregate(...);
+```
+
+**Java эквивалент (нет встроенного индекса):**
+```java
+// Нужен AtomicInteger или IntStream
+AtomicInteger index = new AtomicInteger(0);
+list.stream()
+    .map(item -> index.getAndIncrement() + ": " + item)
+    .collect(toList());
+
+// Или через IntStream
+IntStream.range(0, list.size())
+    .mapToObj(i -> i + ": " + list.get(i))
+    .collect(toList());
 ```
 
 ### SelectMany — развёртка (flatMap)

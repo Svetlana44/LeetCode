@@ -8,6 +8,25 @@
 
 ```
 LeetCode/
+├── 📂 Guides/                   # 📚 Гайды для собеседования
+│   ├── IEnumerable_LINQ_Guide.md    # LINQ для Java-разработчиков
+│   └── Dictionary_Guide.md          # Dictionary (Java Map → C#)
+│
+├── 📂 Tasks/                    # 🎯 Задачи в формате LeetCode
+│   ├── LINQ/                    # LINQ задачи (Where, Select, GroupBy...)
+│   │   ├── 01_Where_Tasks.cs
+│   │   ├── 02_Select_Tasks.cs
+│   │   ├── ...
+│   │   └── 09_LINQ_Medium_Extra_Tasks.cs
+│   └── Dictionary/              # Dictionary задачи
+│       ├── 01_Dictionary_Basic_Tasks.cs
+│       ├── 02_Dictionary_Medium_Tasks.cs
+│       └── 03_Dictionary_Advanced_Tasks.cs
+│
+├── 📂 Tests/                    # Unit-тесты
+│   ├── SortArray.cs             # Тесты на сортировку
+│   └── ContainsArray.cs         # Тесты на поиск
+│
 ├── 📂 NordCodes/                # Бизнес-логика и тесты
 │   ├── MyClass.cs               # Алгоритмы
 │   ├── MyClassTests.cs          # Unit-тесты
@@ -35,6 +54,84 @@ LeetCode/
 ├── 📄 appsettings.json          # Конфигурация приложения
 ├── 📄 .gitignore                # Исключения для Git
 └── 📄 LeetCode.csproj           # Файл проекта
+```
+
+---
+
+## 📚 Гайды для собеседования (Guides/)
+
+Подробные туториалы для подготовки к собесу **Senior C# QA Automation**.
+Адаптированы для переходящих с Java.
+
+| Гайд | Описание | Темы |
+|------|----------|------|
+| `IEnumerable_LINQ_Guide.md` | LINQ для Java-разработчиков | IEnumerable vs IQueryable, Deferred Execution, все методы LINQ, yield, ловушки |
+| `Dictionary_Guide.md` | Dictionary (HashMap → C#) | Add vs [], TryGetValue, LINQ с Dictionary, паттерны, ConcurrentDictionary |
+| `Collections_Guide.md` | **Все коллекции C#** | Иерархия интерфейсов, List/HashSet/Queue/Stack/LinkedList, когда что использовать |
+
+### Содержание LINQ гайда:
+- ✅ Таблица соответствий Java Stream ↔ C# LINQ
+- ✅ IEnumerable / IEnumerator — как работает foreach
+- ✅ Deferred vs Immediate Execution (критично для собеса!)
+- ✅ Все методы: Where, Select, SelectMany, GroupBy, Join, Aggregate...
+- ✅ Select/Where с индексом `(item, index) => ...`
+- ✅ yield return — генераторы
+- ✅ Частые ошибки и ловушки
+- ✅ Nullable types (`int?`) и FirstOrDefault
+- ✅ Генерация тестовых данных
+- ✅ Чек-лист вопросов на собес
+
+---
+
+## 🎯 Задачи в формате LeetCode (Tasks/)
+
+Практические задачи для закрепления материала. Формат как на LeetCode:
+- Описание задачи в ASCII-рамке
+- Примеры Input/Output
+- Hint с подсказкой
+- Готовые NUnit тесты
+
+### LINQ задачи (`Tasks/LINQ/`)
+
+| Файл | Тема | Задачи |
+|------|------|--------|
+| `01_Where_Tasks.cs` | Where | Filter Even, Filter By Length, Filter In Range |
+| `02_Select_Tasks.cs` | Select | Square Numbers, First Letters, Add Index |
+| `03_SelectMany_Tasks.cs` | SelectMany | Flatten 2D, Split Sentences, Get All Chars |
+| `04_OrderBy_Tasks.cs` | OrderBy | Sort By Abs, Sort By Length, Sort By Last Char |
+| `05_GroupBy_Tasks.cs` | GroupBy | Group By Letter, Count By Length, Group By Remainder |
+| `06_Aggregate_Tasks.cs` | Aggregate | Product, Join, Find Longest |
+| `07_FirstSingle_Tasks.cs` | First/Single | First Greater, Find Unique, Safe Find |
+| `08_AnyAll_Tasks.cs` | Any/All | Contains Negative, All Uppercase, Has Common |
+| `09_LINQ_Medium_Extra_Tasks.cs` | **Medium LeetCode** | Top K Frequent, Two Sum, Group Anagrams... |
+| `10_Collections_Tasks.cs` | **Коллекции** | List, HashSet, Queue, Stack, LinkedList |
+
+### Dictionary задачи (`Tasks/Dictionary/`)
+
+| Файл | Уровень | Задачи |
+|------|---------|--------|
+| `01_Dictionary_Basic_Tasks.cs` | Easy | Word Frequency, Two Sum (#1), First Unique Char (#387) |
+| `02_Dictionary_Medium_Tasks.cs` | Medium | Group Anagrams (#49), Longest Consecutive (#128), Subarray Sum (#560) |
+| `03_Dictionary_Advanced_Tasks.cs` | Hard | LRU Cache (#146), Design HashMap (#706), Copy Random List (#138) |
+
+### Как решать задачи:
+
+```csharp
+// 1. Найди метод с throw new NotImplementedException()
+public int[] FilterEvenNumbers(int[] nums)
+{
+    // Твоё решение здесь
+    throw new NotImplementedException();
+}
+
+// 2. Замени на своё решение
+public int[] FilterEvenNumbers(int[] nums)
+{
+    return nums.Where(n => n % 2 == 0).ToArray();
+}
+
+// 3. Запусти тесты
+// dotnet test --filter "FilterEvenNumbers"
 ```
 
 ---

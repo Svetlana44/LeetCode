@@ -34,10 +34,12 @@ namespace LeetCode.Tasks.LINQ
         ║   • -100 <= nums[i] <= 100                                       ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public int[] SquareAllNumbers(int[] nums)
         {
             // Твоё решение здесь
+            return nums.Select(n => n * n).ToArray();
+
             throw new NotImplementedException();
         }
 
@@ -76,10 +78,12 @@ namespace LeetCode.Tasks.LINQ
         ║   • words[i] is non-empty                                        ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public string ExtractFirstLetters(string[] words)
         {
             // Твоё решение здесь
+            return String.Concat(words.Select(w => w[0]));
+
             throw new NotImplementedException();
         }
 
@@ -120,10 +124,11 @@ namespace LeetCode.Tasks.LINQ
         ║   • 1 <= items.length <= 100                                     ║
         ╚══════════════════════════════════════════════════════════════════╝
         */
-        
+
         public string[] AddIndexToEachElement(string[] items)
         {
             // Твоё решение здесь
+            return items.Select((item, index) => $"{index}: {item}").ToArray();
             throw new NotImplementedException();
         }
 
